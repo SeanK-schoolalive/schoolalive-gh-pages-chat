@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>School Alive Chat</title>
+    <meta
+      name="description"
+      content="Responsive chat interface for a static GitHub Pages website."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">School Alive</p>
+          <h1>Chat</h1>
+        </div>
+      </header>
+
+      <section
+        class="chat-shell"
+        aria-label="Chat conversation"
+        aria-live="polite"
+      >
+        <div id="messages" class="messages" role="log" aria-live="polite"></div>
+
+        <div
+          id="loading-indicator"
+          class="loading-indicator hidden"
+          role="status"
+          aria-live="polite"
+        >
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="sr-only">AI is thinking</span>
+        </div>
+
+        <div
+          id="error-banner"
+          class="error-banner hidden"
+          role="alert"
+          aria-live="assertive"
+        ></div>
+
+        <form id="chat-form" class="composer" novalidate>
+          <label for="message-input" class="sr-only">Message</label>
+          <textarea
+            id="message-input"
+            rows="1"
+            placeholder="Type your message..."
+            aria-label="Type your message"
+          ></textarea>
+          <button id="send-button" type="submit" class="send-button">
+            Send
+          </button>
+        </form>
+      </section>
+
+      <footer class="privacy-note">
+        <p>
+          Messages are sent securely over HTTPS to the AI service. This chat is
+          not end-to-end encrypted because the Make AI Agent processes message
+          content.
+        </p>
+        <p class="cors-note">
+          CORS note: The Make webhook must allow requests from this GitHub Pages
+          origin, such as
+          https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/. If you see a CORS
+          error, update the webhook's allowlist or service settings.
+        </p>
+      </footer>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
