@@ -204,7 +204,9 @@ async function sendMessage(rawMessage, { isRetry = false } = {}) {
       throw new Error("Malformed response payload.");
     }
 
-    const reply = typeof payload.reply === "string" ? payload.reply.trim() : "";
+    const reply =
+      typeof payload.reply === "string" ? payload.reply.trim() : "";
+
     if (!reply) {
       throw new Error("Empty reply returned by the AI service.");
     }
