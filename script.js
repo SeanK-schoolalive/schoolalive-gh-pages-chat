@@ -1,10 +1,7 @@
 // IMPORTANT:
 // 1) Paste your Make webhook URL here.
-// 2) The webhook must accept JSON POST requests with this format:
-//    {
-//      "message": "<user message>",
-//      "conversationId": "<stable browser conversation ID>"
-//    }
+// 2) The webhook must accept form-encoded POST requests with this format:
+//    message=<user message>&conversationId=<stable browser conversation ID>
 // 3) The webhook response should be JSON in this format:
 //    {
 //      "reply": "<AI response>",
@@ -119,7 +116,7 @@ function appendMessage(role, text, { isError = false, allowRetry = false } = {})
     retryButton.setAttribute("aria-label", "Retry the last message");
     retryButton.addEventListener("click", () => {
       hideErrorBanner();
-      sendMessage(state.pendingMessage);
+      sendMessage(state.pendingMessage, { isRetry: true });
     });
     wrapper.appendChild(retryButton);
   }
@@ -137,7 +134,7 @@ function adjustTextareaHeight() {
   inputEl.style.height = `${Math.min(inputEl.scrollHeight, 180)}px`;
 }
 
-async function sendMessage(rawMessage) {
+async function sendMessage(rawMessage, { isRetry = false } = {}) {
   const message = createUserMessageText(rawMessage);
 
   if (!message || state.isLoading) {
@@ -146,8 +143,10 @@ async function sendMessage(rawMessage) {
 
   state.pendingMessage = message;
 
-  // Add user message to the conversation.
-  appendMessage("user", message);
+  if (!isRetry) {
+    // Add user message to the conversation only for a fresh send.
+    appendMessage("user", message);
+  }
 
   // Clear the input.
   inputEl.value = "";
@@ -166,18 +165,20 @@ async function sendMessage(rawMessage) {
   }, timeoutMs);
 
   try {
+    const formData = new URLSearchParams({
+      message,
+      conversationId: state.conversationId,
+    });
+
     const response = await fetch(MAKE_WEBHOOK_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify({
-        message: message,
-        conversationId: state.conversationId,
-      }),
+      body: formData,
       signal: controller.signal,
       cache: "no-store",
+      credentials: "omit",
     });
 
     if (!response.ok) {
@@ -213,8 +214,15 @@ async function sendMessage(rawMessage) {
       payload.conversationId.trim()
     ) {
       state.conversationId = payload.conversationId.trim();
+
+      try {
+        sessionStorage.setItem(SESSION_STORAGE_KEY, state.conversationId);
+      } catch (error) {
+        // Ignore storage errors and keep the in-memory ID.
+      }
     }
 
+    state.pendingMessage = "";
     appendMessage("assistant", reply);
   } catch (error) {
     let userMessage = "Something went wrong while sending your message.";
